@@ -4,6 +4,7 @@ Tic Tac Toe Player
 
 import math
 import copy
+import utils as u
 
 #Players
 X = "X"
@@ -93,10 +94,18 @@ def winner(board):
     Returns the winner of the game, if there is one.
     """
     #Check for a tris in horizontally vertically and diagonally
-    for i in range(len(board)):
-        for j in range(len(board[i])):
-            if(board[i][j])
-    
+    check1 = u.horizontalcheck(board)
+    check2 = u.verticalCheck(board)
+    check3 = u.diagonalCheck(board)
+    #Evaluate thoose checks and return the winner if it exists
+    if  check1 != None:
+        return check1
+    elif check2 != None:
+        return check2
+    elif check3 != None:
+        return check3         
+    #Otherwise it's a draw
+    return None
 
 def terminal(board):
     """
