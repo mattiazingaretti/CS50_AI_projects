@@ -63,7 +63,7 @@ def actions(board):
         for j in range(len(board[i])):
             # "Box" must be EMPTY to be available
             if(board[i][j] == EMPTY):
-                set.add((i,j))
+                actions.add((i,j))
 
     return actions
 
@@ -111,18 +111,27 @@ def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    raise NotImplementedError
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if board[i][j] == EMPTY:
+                return False
+    return True
 
 
 def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
     """
-    raise NotImplementedError
+    winner = winner(board)
+    if winner == X:
+        return 1
+    elif winner == O:
+        return -1
+    return 0
 
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
+    
