@@ -48,18 +48,31 @@ def diagonalCheck(board):
     """
         Tries to find the player who has done a diagonal tris None otherwise
     """
-    for i in range(len(board)):
-        o = 0
-        x = 0
-        for j in range(len(board[i])):
-            #Diagonal increment check
-            if board[j][j] == X:
-                x += 1
-            elif board[j][j] == O:
-                o += 1
-            #Check first for a winner
-            if o == 3:
-                return O
-            if x == 3:
-                return X 
+    x = 0
+    o = 0
+    for j in range(len(board[0])):
+        #Main Diagonal increment check
+        if board[j][j] == X:
+            x += 1
+        elif board[j][j] == O:
+            o += 1
+        #Check first for a winner
+        if o == 3:
+            return O
+        if x == 3:
+            return X
+
+    o = 0
+    x = 0
+    for k in range(len(board[0])):
+        #Main Diagonal increment check
+        if board[k][len(board[0])-1-k] == X:
+            x += 1
+        elif board[k][len(board[0])-1-k] == O:
+            o += 1
+        #Check first for a winner
+        if o == 3:
+            return O
+        if x == 3:
+            return X  
     return None

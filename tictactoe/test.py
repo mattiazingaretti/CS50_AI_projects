@@ -1,10 +1,10 @@
-from tictactoe import initial_state, player
-
+from tictactoe import terminal, winner
+import utils as u
 X ="X"
 O = "O"
 
-print(player(
-    [[None,None,None],
-    [None,None,None],
-    [X,O,X]
+print(winner(
+    [[O,None,X],
+    [O,X,O],
+    [X,None,None]
 ]))

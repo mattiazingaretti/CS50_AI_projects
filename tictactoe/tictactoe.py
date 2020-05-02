@@ -41,7 +41,6 @@ def player(board):
         for j in range(len(board[i])):
             if board[i][j] != EMPTY:
                 total += 1
-    print(total)
     #if the total is odd then is O turn
     if total%2 != 0:
         return O
@@ -108,21 +107,19 @@ def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    for i in range(len(board)):
-        for j in range(len(board[i])):
-            if board[i][j] == EMPTY:
-                return False
-    return True
+    if winner(board) != None:
+        return True
+    return False
 
 
 def utility(board):
     """
     Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
     """
-    winner = winner(board)
-    if winner == X:
+    w = winner(board)
+    if w == X:
         return 1
-    elif winner == O:
+    elif w == O:
         return -1
     return 0
 
@@ -148,27 +145,34 @@ def minimax(board):
     """
     #Retrieve the current player
     p = player(board)
-      
+    
+    #If game is over return None
+    if terminal(board):
+        return None
+
     # if current player is X pick the action in actions(board) such as
     # it has the bigger value of Min(result(board, a))
     if p == X:
         values = {}
         for a in actions(board):
-            values[a].append(Min(result(board, a)))
-        v = max(list(values.values))
-        for k in list(values):
-            if values.get(k) == v:
-                return k
+            values[a] = Min(result(board, a))
+        v = max(list(values.values()))
+        keys = list(values)
+        if len(keys)>0:
+            for k in list(values):
+                if values.get(k) == v:
+                    return k
     # if current player is O pick the action in actions(board) such as
     # it has the smallest value of Max(result(board, a))
     elif p == O:
         values = {}
         for a in actions(board):
-            values[a].append(Max(result(board, a)))
-        v = min(list(values.values))
-        for k in list(values):
-            if values.get(k) == v:
-                return k        
-    #If game is over return None
-    return None
+            values[a] = Max(result(board, a))
+        v = min(list(values.values()))
+        keys = list(values)
+        if len(keys)>0:
+            for k in keys:
+                if values.get(k) == v:
+                    return k        
+    
     
