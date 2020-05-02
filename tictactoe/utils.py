@@ -3,6 +3,7 @@ X = "X"
 O = "O"
 
 
+
 def horizontalcheck(board):
     """
         Tries to find the player who has done an horizontal tris None otherwise

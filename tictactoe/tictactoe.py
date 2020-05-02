@@ -6,15 +6,15 @@ import math
 import copy
 import utils as u
 
+
 #Players
-X = "X"
-O = "O"
+X = "X" #He is the MAX player
+O = "O" #He is the MIN player
 
 #Board = State
 #Action = (i, j) <-> Means put current player on positin i, j on the board
 
 EMPTY = None
-turnCounter = 0
 
 def initial_state():
     """
@@ -34,18 +34,19 @@ def player(board):
     
     #X moves first
     if(board == initial_state()):
-        turnCounter += 1
         return X
-
-    #Keep track of the sequence of turns
-    if(turnCounter%2 == 0):
-        player = O
-    else:
-        player = X
-
-    #Update total number of turns
-    turnCounter += 1
-    return player 
+    #Count total number of non empty players on the grid 
+    total = 0
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if board[i][j] != EMPTY:
+                total += 1
+    print(total)
+    #if the total is odd then is O turn
+    if total%2 != 0:
+        return O
+    #otherwise it's X turn
+    return X
     
 
 def actions(board):
@@ -73,18 +74,14 @@ def result(board, action):
     """
     #Check if action is valid raise an Exception otherwise
     if not action in actions(board):
-        #TODO Resolve import errors and raise InvalidActionError()
-        pass
-    
+        raise NameError("Invalid Action Attempted!")
+        
     #Functional Implementation needed by the MiniMax algorithm
     resultboard = copy.deepcopy(board)
-
-    #Retrieve current/active player
-    player = player(board)
-
+    
     #Apply the action to the current state
     i,j = action
-    resultboard[i][j] = player
+    resultboard[i][j] = player(board)
 
     #Then return the new State
     return resultboard
@@ -129,9 +126,49 @@ def utility(board):
         return -1
     return 0
 
+def Max(board):
+    if terminal(board):
+        return utility(board)
+    v = -1000000
+    for a in actions(board):
+        v = max(v,Min(result(board,a)))
+    return v
+
+def Min(board):
+    if terminal(board):
+        return utility(board)
+    v = 1000000
+    for a in actions(board):
+        v = min(v, Max(result(board, a)))
+    return v
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
+    #Retrieve the current player
+    p = player(board)
+      
+    # if current player is X pick the action in actions(board) such as
+    # it has the bigger value of Min(result(board, a))
+    if p == X:
+        values = {}
+        for a in actions(board):
+            values[a].append(Min(result(board, a)))
+        v = max(list(values.values))
+        for k in list(values):
+            if values.get(k) == v:
+                return k
+    # if current player is O pick the action in actions(board) such as
+    # it has the smallest value of Max(result(board, a))
+    elif p == O:
+        values = {}
+        for a in actions(board):
+            values[a].append(Max(result(board, a)))
+        v = min(list(values.values))
+        for k in list(values):
+            if values.get(k) == v:
+                return k        
+    #If game is over return None
+    return None
     

@@ -1,8 +1,10 @@
-from tictactoe import winner
+from tictactoe import initial_state, player
 
 X ="X"
 O = "O"
-print(winner([[O, X, X],
-              [O ,O, O] ,
-              [X, O, X]
+
+print(player(
+    [[None,None,None],
+    [None,None,None],
+    [X,O,X]
 ]))
