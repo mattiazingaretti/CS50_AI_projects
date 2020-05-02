@@ -100,7 +100,7 @@ def winner(board):
         return check2
     elif check3 != None:
         return check3         
-    #Otherwise it's a draw
+    #Otherwise There is no winner 
     return None
 
 def terminal(board):
@@ -109,7 +109,14 @@ def terminal(board):
     """
     if winner(board) != None:
         return True
-    return False
+    #Check for a draw
+    else:
+        for i in range(len(board)):
+            for j in range(len(board[i])):
+                #Stil there are actions available so game is not ended
+                if board[i][j] == EMPTY:
+                    return False
+        return True
 
 
 def utility(board):
