@@ -133,7 +133,7 @@ def utility(board):
 def Max(board):
     if terminal(board):
         return utility(board)
-    v = -1000000
+    v = -1
     for a in actions(board):
         v = max(v,Min(result(board,a)))
     return v
@@ -141,7 +141,7 @@ def Max(board):
 def Min(board):
     if terminal(board):
         return utility(board)
-    v = 1000000
+    v = 1
     for a in actions(board):
         v = min(v, Max(result(board, a)))
     return v
