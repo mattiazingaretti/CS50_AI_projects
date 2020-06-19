@@ -114,6 +114,7 @@ class Sentence():
             return set()
         
 
+
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
@@ -125,6 +126,8 @@ class Sentence():
         #Case no cell is a mine 
         if self.count == 0:
             return self.cells
+        
+
         
 
     def mark_mine(self, cell):
@@ -198,8 +201,34 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
-        raise NotImplementedError
+        #1
+        self.moves_made.add(cell)
+        #2
+        self.mark_safe(cell)
+        #3
+        s = Sentence(set(cell),count)
 
+        #Add to KB only if new cell is undetermined
+        #if not cell in self.known_mines() and not cell in s.known_safes(): 
+        self.knowledge.append(s)
+        
+        #4
+        for s1 in self.knowledge:
+            if cell in s1.known_safes():
+                self.mark_safe(cell)
+            elif cell in s1.known_mines():
+                self.mark_mine(cell)
+        
+        #5
+        for s1 in self.knowledge:
+            for s2 in self.knowledge:
+                if s1.cells.issubset(s2.cells):
+                    newsentence = Sentence(s2.cells.difference(s1.cells), s2.count - s1.count)
+                    self.knowledge.append(newsentence)
+                if s2.cells.issubset(s1.cells):
+                     newsentence2 = Sentence(s1.cells.difference(s2.cells), s1.count - s2.count)
+                     self.knowledge.append(newsentence2)
+        
     def make_safe_move(self):
         """
         Returns a safe cell to choose on the Minesweeper board.
@@ -209,7 +238,7 @@ class MinesweeperAI():
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
-        raise NotImplementedError
+        return None
 
     def make_random_move(self):
         """
@@ -218,4 +247,4 @@ class MinesweeperAI():
             1) have not already been chosen, and
             2) are not known to be mines
         """
-        raise NotImplementedError
+        return None
