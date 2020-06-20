@@ -108,9 +108,7 @@ class Sentence():
         #Case all cells are mines
         if len(self.cells) == self.count:
             return self.cells
-        
-        #Case no cell is a mine
-        if self.count == 0:
+        else:
             return set()
         
 
@@ -119,15 +117,11 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be safe.
         """
-        #Case all cells are mines
-        if len(self.cells) == self.count:
-            return set()
-        
-        #Case no cell is a mine 
         if self.count == 0:
             return self.cells
+        else:
+            return set()
         
-
         
 
     def mark_mine(self, cell):
@@ -209,25 +203,25 @@ class MinesweeperAI():
         s = Sentence(set(cell),count)
 
         #Add to KB only if new cell is undetermined
-        #if not cell in self.known_mines() and not cell in s.known_safes(): 
-        self.knowledge.append(s)
-        
+        if not cell in s.known_mines().copy() and not cell in s.known_safes().copy(): 
+            self.knowledge.append(s)
         #4
-        for s1 in self.knowledge:
-            if cell in s1.known_safes():
+        for s1 in self.knowledge.copy():
+            if cell in s1.known_safes().copy():
                 self.mark_safe(cell)
-            elif cell in s1.known_mines():
+            elif cell in s1.known_mines().copy():
                 self.mark_mine(cell)
-        
+                
         #5
-        for s1 in self.knowledge:
-            for s2 in self.knowledge:
-                if s1.cells.issubset(s2.cells):
+        it = self.knowledge.copy()
+        for s1 in it:
+            for s2 in it:
+                if len(s1.cells) >0 and len(s2.cells) > 0 and s1 != s2 and s1.cells.issubset(s2.cells):
                     newsentence = Sentence(s2.cells.difference(s1.cells), s2.count - s1.count)
-                    self.knowledge.append(newsentence)
-                if s2.cells.issubset(s1.cells):
-                     newsentence2 = Sentence(s1.cells.difference(s2.cells), s1.count - s2.count)
-                     self.knowledge.append(newsentence2)
+                    if newsentence not in self.knowledge:
+                        self.knowledge.append(newsentence)
+                        print(len(self.knowledge))
+                
         
     def make_safe_move(self):
         """
