@@ -180,6 +180,16 @@ class MinesweeperAI():
         for sentence in self.knowledge:
             sentence.mark_safe(cell)
 
+    def get_neighbours(self,cell):
+        i,j = cell
+        neighbours = set()
+        for k in range(-1,2):
+            for h in range(-1,2):
+                if i+k >= 0 and j+h>=0 and (i+k,j+h) != cell:
+                    neighbours.add((i+k,j+h))
+        return neighbours
+        
+    
     def add_knowledge(self, cell, count):
         """
         Called when the Minesweeper board tells us, for a given
@@ -195,32 +205,33 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
+       
         #1
         self.moves_made.add(cell)
         #2
         self.mark_safe(cell)
         #3
-        s = Sentence(set(cell),count)
-
-        #Add to KB only if new cell is undetermined
-        if not cell in s.known_mines().copy() and not cell in s.known_safes().copy(): 
-            self.knowledge.append(s)
+        if not cell in self.mines and not cell in self.safes: 
+            self.knowledge.append(Sentence(self.get_neighbours(cell), count ))
         #4
         for s1 in self.knowledge.copy():
-            if cell in s1.known_safes().copy():
-                self.mark_safe(cell)
-            elif cell in s1.known_mines().copy():
-                self.mark_mine(cell)
+            if len(s1.cells) == s1.count:
+                for c in s1.cells:
+                    self.mark_mine(c)    
+            if s1.count == 0:
+                for c in s1.cells:
+                    self.mark_safe(c)
                 
         #5
         it = self.knowledge.copy()
         for s1 in it:
             for s2 in it:
                 if len(s1.cells) >0 and len(s2.cells) > 0 and s1 != s2 and s1.cells.issubset(s2.cells):
-                    newsentence = Sentence(s2.cells.difference(s1.cells), s2.count - s1.count)
-                    if newsentence not in self.knowledge:
-                        self.knowledge.append(newsentence)
-                        print(len(self.knowledge))
+                    if s2.count - s1.count >0:
+                        newsentence = Sentence(s2.cells.difference(s1.cells), s2.count - s1.count)
+                        if newsentence not in self.knowledge:
+                            self.knowledge.append(newsentence)
+                        
                 
         
     def make_safe_move(self):
@@ -232,6 +243,13 @@ class MinesweeperAI():
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
+        safecp = self.safes.copy()
+        movescp = self.moves_made.copy()
+        
+        if len(safecp)> 0:
+            for elem in safecp:
+                if not elem in movescp and not elem in self.mines:
+                    return elem
         return None
 
     def make_random_move(self):
@@ -241,4 +259,10 @@ class MinesweeperAI():
             1) have not already been chosen, and
             2) are not known to be mines
         """
+        minescp = self.mines
+        movescp = self.moves_made
+        for i in range(self.width):
+            for j in range(self.height):
+                if not (i,j) in minescp and not (i,j) in movescp:
+                    return (i,j) 
         return None
