@@ -185,7 +185,7 @@ class MinesweeperAI():
         neighbours = set()
         for k in range(-1,2):
             for h in range(-1,2):
-                if i+k >= 0 and j+h>=0 and (i+k,j+h) != cell:
+                if i+k >= 0 and j+h>=0 and (i+k,j+h) != cell and i+k <8 and j+h < 8:
                     neighbours.add((i+k,j+h))
         return neighbours
         
@@ -211,15 +211,17 @@ class MinesweeperAI():
         #2
         self.mark_safe(cell)
         #3
-        if not cell in self.mines and not cell in self.safes: 
+        if not cell in self.mines: 
             self.knowledge.append(Sentence(self.get_neighbours(cell), count ))
+
         #4
+        
         for s1 in self.knowledge.copy():
             if len(s1.cells) == s1.count:
-                for c in s1.cells:
+                for c in s1.cells.copy():
                     self.mark_mine(c)    
             if s1.count == 0:
-                for c in s1.cells:
+                for c in s1.cells.copy():
                     self.mark_safe(c)
                 
         #5
@@ -245,7 +247,7 @@ class MinesweeperAI():
         """
         safecp = self.safes.copy()
         movescp = self.moves_made.copy()
-        
+
         if len(safecp)> 0:
             for elem in safecp:
                 if not elem in movescp and not elem in self.mines:
