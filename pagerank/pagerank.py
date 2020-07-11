@@ -58,10 +58,9 @@ def transition_model(corpus, page, damping_factor):
     a link at random chosen from all pages in the corpus.
     """
     result = dict()
-    
-    links = corpus[page]
-    
-    if(len(links) > 0):
+        
+    if page in list(corpus.keys()):
+        links = corpus[page]
         not_link_prob = (1- damping_factor)/len(corpus)
         link_prob = damping_factor/ len(links)
         
@@ -85,8 +84,36 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
+    result = dict()
     
-
+    #First sample generated at random
+    if len(corpus)> 0:
+        first_sample = random.choice(list(corpus.keys()))
+        result[first_sample[0]] = 1/(len(corpus)*n)
+    tm = transition_model(corpus, first_sample, damping_factor)
+    
+    # n- 1 samples
+    for i in range(n-1):
+        
+        if i == 0:
+            next_sample = random.choices(population = list(tm.keys()), weights = list(tm.values()))
+        else:
+            next_sample = random.choices(population = list(next_tm.keys()), weights = list(next_tm.values()))
+        if next_sample[0] in list(result.keys()):
+            result[next_sample[0]] += (1/(len(corpus)*n))
+        else:
+            result[next_sample[0]] = 1/(len(corpus)*n)
+        
+        next_tm = transition_model(corpus, next_sample[0], damping_factor)
+    
+    """#Handles possible missing samples in corpus
+    for elem in corpus:
+        if elem not in list(result.keys()):
+            result[elem] = 1/(len(corpus)*n)
+    """
+    return result
+    
+        
 
 def iterate_pagerank(corpus, damping_factor):
     """
