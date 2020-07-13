@@ -58,22 +58,31 @@ def transition_model(corpus, page, damping_factor):
     a link at random chosen from all pages in the corpus.
     """
     result = dict()
-        
-    if page in list(corpus.keys()):
-        links = corpus[page]
-        not_link_prob = (1- damping_factor)/len(corpus)
-        link_prob = damping_factor/ len(links)
-        
-        for k in corpus:
-            if corpus[k] in links:
-                result[k] = not_link_prob + link_prob
+    
+    links = corpus[page] #links is a set
+    
+    probability = (1-damping_factor)/ len(corpus)
+    linked_pages_prob = 0 #Just to initialize to a neutral value
+    
+    #Needed only if page has at least 1 link
+    if len(links) != 0:
+        linked_pages_prob = damping_factor/len(links)
+    
+    for p in corpus:
+        #if p has no link
+        if len(corpus[p]) == 0:
+            result[p] = 1/len(corpus)
+        else:
+            if p not in links:
+                result[p] = probability
             else:
-                result[k] = not_link_prob
-    else:
-        for k in corpus:
-            result[k] = 1/len(corpus)
+                result[p] = probability + linked_pages_prob
+    #DEBUG check that will sum at 1
+    if round(sum(result.values()),5) != 1:
+        print(f'ERROR! not addding up to 1')
+    print(result,corpus)
     return result
-
+            
 
 def sample_pagerank(corpus, damping_factor, n):
     """
@@ -89,7 +98,7 @@ def sample_pagerank(corpus, damping_factor, n):
     #First sample generated at random
     if len(corpus)> 0:
         first_sample = random.choice(list(corpus.keys()))
-        result[first_sample[0]] = 1/(len(corpus)*n)
+        result[first_sample] = 1/(len(corpus)*n)
     tm = transition_model(corpus, first_sample, damping_factor)
     
     # n- 1 samples
@@ -106,11 +115,6 @@ def sample_pagerank(corpus, damping_factor, n):
         
         next_tm = transition_model(corpus, next_sample[0], damping_factor)
     
-    """#Handles possible missing samples in corpus
-    for elem in corpus:
-        if elem not in list(result.keys()):
-            result[elem] = 1/(len(corpus)*n)
-    """
     return result
     
         
