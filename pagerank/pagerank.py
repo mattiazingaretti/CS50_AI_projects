@@ -80,7 +80,6 @@ def transition_model(corpus, page, damping_factor):
     #DEBUG check that will sum at 1
     if round(sum(result.values()),5) != 1:
         print(f'ERROR! not addding up to 1')
-    print(result,corpus)
     return result
             
 
@@ -93,30 +92,33 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    result = dict()
+    #Initialize resulting dictionary
+    result = dict.fromkeys(list(corpus.keys()),0)
     
-    #First sample generated at random
-    if len(corpus)> 0:
-        first_sample = random.choice(list(corpus.keys()))
-        result[first_sample] = 1/(len(corpus)*n)
-    tm = transition_model(corpus, first_sample, damping_factor)
-    
-    # n- 1 samples
-    for i in range(n-1):
-        
+    for i in range(n):
         if i == 0:
-            next_sample = random.choices(population = list(tm.keys()), weights = list(tm.values()))
+            #Sample at random from all available pages and keep track of it in the resulting dictionary
+            sample = random.choice(list(corpus.keys()))
+            result[sample] += 1
         else:
-            next_sample = random.choices(population = list(next_tm.keys()), weights = list(next_tm.values()))
-        if next_sample[0] in list(result.keys()):
-            result[next_sample[0]] += (1/(len(corpus)*n))
-        else:
-            result[next_sample[0]] = 1/(len(corpus)*n)
-        
-        next_tm = transition_model(corpus, next_sample[0], damping_factor)
+            #Based on previous choice retreive a transition model
+            t_model = transition_model(corpus, sample, damping_factor)
+            
+            weights = list(t_model.values())
+            sample = random.choices(list(t_model.keys()), weights)[0]
+            result[sample] += 1
+    
+    #I kept track when sampling adding one for each sample, now I have to divide by n to get a value beetween [0,1]
+    for k,v in result.items():
+        result[k] = v/n
+    
+    #DEBUG check that will sum at 1
+    if round(sum(result.values()),5) != 1:
+        print(f'ERROR! not addding up to 1')
     
     return result
-    
+
+
         
 
 def iterate_pagerank(corpus, damping_factor):
@@ -128,7 +130,9 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    
+    
+    
 
 
 if __name__ == "__main__":
