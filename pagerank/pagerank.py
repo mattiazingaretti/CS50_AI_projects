@@ -130,8 +130,25 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
+    #Initialize dictionary as specified
+    
+    N = len(corpus)
+    page_rank = dict.fromkeys(list(corpus.keys()), 1/N)
+    
+    threshold = 0.001
+    
+    while old - new 
+        for page in list(corpus.keys()):
+            for link in corpus[page]:
+                page_rank[page] += page_rank[link]/len(corpus[page])
+            page_rank[page] = ((1-d)/N )+ damping_factor*page_rank[page]
+            
     
     
+    
+    
+    
+    return page_rank
     
 
 
