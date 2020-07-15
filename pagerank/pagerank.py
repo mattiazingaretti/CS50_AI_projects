@@ -77,9 +77,6 @@ def transition_model(corpus, page, damping_factor):
                 result[p] = probability
             else:
                 result[p] = probability + linked_pages_prob
-    #DEBUG check that will sum at 1
-    if round(sum(result.values()),5) != 1:
-        print(f'ERROR! not addding up to 1')
     return result
             
 
@@ -112,9 +109,6 @@ def sample_pagerank(corpus, damping_factor, n):
     for k,v in result.items():
         result[k] = v/n
     
-    #DEBUG check that will sum at 1
-    if round(sum(result.values()),5) != 1:
-        print(f'ERROR! not addding up to 1')
     
     return result
 
@@ -134,7 +128,7 @@ def iterate_pagerank(corpus, damping_factor):
     
     N = len(corpus)
     page_rank = dict.fromkeys(list(corpus.keys()), 1/N)
-    print(page_rank)
+    
     threshold = 0.001
     exit_val =False
     
