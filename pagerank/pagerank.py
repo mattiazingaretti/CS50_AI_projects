@@ -134,21 +134,31 @@ def iterate_pagerank(corpus, damping_factor):
     
     N = len(corpus)
     page_rank = dict.fromkeys(list(corpus.keys()), 1/N)
-    
+    print(page_rank)
     threshold = 0.001
+    exit_val =False
     
-    while old - new 
-        for page in list(corpus.keys()):
-            for link in corpus[page]:
-                page_rank[page] += page_rank[link]/len(corpus[page])
-            page_rank[page] = ((1-d)/N )+ damping_factor*page_rank[page]
+    while exit_val == False:
+        
+        #Use a copy so they're not influenced from new values
+        copy_pr = page_rank.copy()
+
+        for page in page_rank:
+            old = page_rank[page]
+            #pr is the std page rank
+            pr = (1-damping_factor)/len(corpus)
+            for p in corpus:
+                if page in corpus[p]:
+                    pr += damping_factor*(page_rank[p]/len(corpus[p]))
+            #Use formula
+            page_rank[page] =  pr
+            #Check for 
+            if abs(old- pr)<= threshold:
+                exit_val = True
             
-    
-    
-    
-    
-    
-    return page_rank
+    #Normalize
+    return {k : v/sum(page_rank.values()) for k,v in page_rank.items()}
+
     
 
 
