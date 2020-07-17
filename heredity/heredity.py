@@ -127,6 +127,27 @@ def powerset(s):
         )
     ]
 
+def get_requested_prob(p,o,t,h):
+    req = [0,False]
+    if p in o:
+        req[0] = 1
+    elif p in t:
+        req[0] = 2
+    elif p not in o and p not in t:
+        req[0] = 0
+    if p in h:
+        req[1] = True
+    else:
+        req[1] = False
+    return req
+
+def has_parent(person,people):
+    if people[person]["mother"] != None and people[person]["father"]!= None:
+        return True
+    return False
+
+def get_parents(person, people):
+    return [ people[person]["mother"],people[person]["father"] ]
 
 def joint_probability(people, one_gene, two_genes, have_trait):
     """
@@ -139,7 +160,16 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
     """
-    raise NotImplementedError
+    
+    for person in people:
+        request = get_requested_prob(person,one_gene,two_genes,have_trait)
+        
+        if has_parent(person,people):
+            mom,dad = get_parents(person,people)
+            
+        else:
+
+    return request
 
 
 def update(probabilities, one_gene, two_genes, have_trait, p):
