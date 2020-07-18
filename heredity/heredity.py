@@ -149,6 +149,13 @@ def has_parent(person,people):
 def get_parents(person, people):
     return [ people[person]["mother"],people[person]["father"] ]
 
+def get_inherited_prob(m_r,d_r):
+    if m_r[0] == 0:
+            if d_r[0] != 0:
+                get_from_mom = PROBS["mutation"]*(1-PROBS["mutation"])
+            else:
+                get_from_mom = PROBS["mutation"]*
+    i
 def joint_probability(people, one_gene, two_genes, have_trait):
     """
     Compute and return a joint probability.
@@ -160,15 +167,19 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
     """
-    
+    jointPB = 1
     for person in people:
         request = get_requested_prob(person,one_gene,two_genes,have_trait)
-        
+        currentPB = 1
         if has_parent(person,people):
             mom,dad = get_parents(person,people)
-            
+            mom_req = get_requested_prob(mom,one_gene,two_genes,have_trait)
+            dad_req = get_requested_prob(dad,one_gene,two_genes,have_trait)
+            inherit_prob = get_inherited_prob(mom_req,dad_req)
+            currentPB =PROBS["trait"][request[0]][request[1]]*inherit_prob
         else:
-
+            currentPB = PROBS["gene"][request[0]]*PROBS["trait"][request[0]][request[1]]
+        jointPB *= currentPB
     return request
 
 
