@@ -149,13 +149,14 @@ def has_parent(person,people):
 def get_parents(person, people):
     return [ people[person]["mother"],people[person]["father"] ]
 
-def get_inherited_prob(m_r,d_r):
-    if m_r[0] == 0:
-            if d_r[0] != 0:
-                get_from_mom = PROBS["mutation"]*(1-PROBS["mutation"])
-            else:
-                get_from_mom = PROBS["mutation"]*
-    i
+def get_inherited_prob(p, one_gene, two_genes):
+    if p in two_genes:
+        return 1 - PROBS['mutation']
+    elif p in one_gene:
+        return 0.5
+    else:
+        return PROBS['mutation']
+
 def joint_probability(people, one_gene, two_genes, have_trait):
     """
     Compute and return a joint probability.
@@ -170,17 +171,28 @@ def joint_probability(people, one_gene, two_genes, have_trait):
     jointPB = 1
     for person in people:
         request = get_requested_prob(person,one_gene,two_genes,have_trait)
+       
         currentPB = 1
         if has_parent(person,people):
             mom,dad = get_parents(person,people)
-            mom_req = get_requested_prob(mom,one_gene,two_genes,have_trait)
-            dad_req = get_requested_prob(dad,one_gene,two_genes,have_trait)
-            inherit_prob = get_inherited_prob(mom_req,dad_req)
-            currentPB =PROBS["trait"][request[0]][request[1]]*inherit_prob
+            mp = get_inherited_prob(mom, one_gene,two_genes)
+            dp = get_inherited_prob(dad, one_gene, two_genes)
+
+            inherited = 1
+
+            if request[0] == 2:
+               inherited *= mp * dp
+            elif request[0] == 1:
+                #example case
+                inherited *= (1 - mp) * dp + (1 - dp) * mp
+            else:
+                inherited *= (1 - mp) * (1 - dp)
+
+            currentPB = PROBS["trait"][request[0]][request[1]]*inherited
         else:
             currentPB = PROBS["gene"][request[0]]*PROBS["trait"][request[0]][request[1]]
         jointPB *= currentPB
-    return request
+    return jointPB
 
 
 def update(probabilities, one_gene, two_genes, have_trait, p):
@@ -190,16 +202,31 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     Which value for each distribution is updated depends on whether
     the person is in `have_gene` and `have_trait`, respectively.
     """
-    raise NotImplementedError
-
+    #update map 
+    for person in probabilities:
+        req = get_requested_prob(person, one_gene,two_genes,have_trait)
+        
+        probabilities[person]["trait"][req[1]] += p     
+        probabilities[person]["gene"][req[0]] += p
+    
+    return 
 
 def normalize(probabilities):
     """
     Update `probabilities` such that each probability distribution
     is normalized (i.e., sums to 1, with relative proportions the same).
     """
-    raise NotImplementedError
-
+    for person in probabilities:
+        #get sum for each probability distribution
+        gene_sum = sum(probabilities[person]["gene"].values())
+        trait_sum = sum(probabilities[person]["trait"].values())
+        
+        # Normalise to 1:
+        for g in probabilities[person]['gene']:
+            probabilities[person]['gene'][g] /= gene_sum
+        for k in probabilities[person]['trait']:
+            probabilities[person]['trait'][k] /= trait_sum
+        
 
 if __name__ == "__main__":
     main()
