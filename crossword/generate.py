@@ -1,4 +1,4 @@
-import sys
+import sys,random
 
 from crossword import *
 
@@ -118,9 +118,10 @@ class CrosswordCreator():
         overlap = self.crossword.overlaps[x,y]
         #Otherwise they're already arc consistent (every value in X's domain is acceptable and there's no arc)
         if overlap != None:
-            for x_val in self.domains[x]:
+            for x_val in self.domains[x].copy():
                 for y_val in self.domains[y]:
-                    if not (x_val[overlap[0]] == y_val[overlap[1]]) :
+                    #Also check if it is already been removed
+                    if not (x_val[overlap[0]] == y_val[overlap[1]]) and (x_val in self.domains[x]) :
                         self.domains[x].remove(x_val)
                         revised = True
         return revised
@@ -135,12 +136,29 @@ class CrosswordCreator():
         return False if one or more domains end up empty.
         """
         #Begins with all arcs in the problem
-        print(self.crossword.variables)
+        
         if arcs == None:
-            print(self.crossword.variables)
+            arc_queue = list()
+            for X in self.crossword.variables:
+                neighbours = self.crossword.neighbors(X)
+                if len(neighbours)>0:
+                    for var in neighbours:
+                        overlaps = self.crossword.overlaps[X, var]
+                        if overlaps != None:
+                            arc_queue.append((X,var))
+            #TODO make the while a separate function and call it in the else passing arcs
+            while len(arc_queue) > 0:
+                (X,Y) = arc_queue.pop()
+
+                if self.revise(X,Y):
+                    if len(self.domains[X]) == 0:
+                        return False
+                    for Z in self.crossword.neighbors(X) - {Y}:
+                        arc_queue.append((Z,X))
+            return True
         #Use arcs as initial list of arcs
         else:
-            
+            return 
 
 
 
