@@ -115,9 +115,16 @@ class CrosswordCreator():
         False if no revision was made.
         """
         revised = False
-        for val_x in self.domains[x]:
-            for val_y in self.domains[y]:
-              
+        if not self.crossword.overlaps[x,y] is None:
+            i,j = self.crossword.overlaps[x,y]
+            for val_x in self.domains[x].copy():
+                do_not_remove = False
+                for val_y in self.domains[y]:
+                    if val_x[i] == val_y[j]:
+                        do_not_remove = True
+                if do_not_remove == False:
+                    self.domains[x].remove(val_x)
+                    revised = True
 
         return revised
 
@@ -192,9 +199,19 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
-        #TODO Later implement correctly
-        return sorted(list(self.domains[var]))
+        #Mapping each value of var to how many choices we  delete in neighbour's values (n)
+        deleted_choices = dict.fromkeys(self.domains[var], 0) #Assuming no domain is empty
 
+        for val in deleted_choices:
+            for neighbour in self.crossword.neighbors(var) :
+                if neighbour not in assignment:
+                    for val_n in self.domains[neighbour]:
+                        if not self.consistent({var:val, neighbour:val_n}):
+                            print("ao")
+                            deleted_choices[val] += 1
+        print(deleted_choices)
+
+        return list(deleted_choices)
 
     def select_unassigned_variable(self, assignment):
         """
