@@ -99,10 +99,11 @@ class CrosswordCreator():
         (Remove any values that are inconsistent with a variable's unary
          constraints; in this case, the length of the word.)
         """
-        for var in self.domains:
-            for value in self.domains[var].copy():
-                if len(value) != var.length:
-                    self.domains[var].remove(value)  
+        for var in self.crossword.variables:
+            for w in self.crossword.words:
+                if len(w) != var.length:
+                    self.domains[var].remove(w)
+        return None
 
     def revise(self, x, y):
         """
@@ -113,28 +114,24 @@ class CrosswordCreator():
         Return True if a revision was made to the domain of `x`; return
         False if no revision was made.
         """
-        #As explained in lecture by Brian...
         revised = False
-        overlap = self.crossword.overlaps[x,y]
-        #Otherwise they're already arc consistent (every value in X's domain is acceptable and there's no arc)
-        if overlap != None:
-            for x_val in self.domains[x].copy():
-                for y_val in self.domains[y]:
-                    #Also check if it is already been removed
-                    if not (x_val[overlap[0]] == y_val[overlap[1]]) and (x_val in self.domains[x]) :
-                        self.domains[x].remove(x_val)
-                        revised = True
+        for val_x in self.domains[x]:
+            for val_y in self.domains[y]:
+              
+
         return revised
 
-    def ac3_dirtyJob(self,queue):
-        while len(queue) > 0:
-            (X,Y) = queue.pop()
-            if self.revise(X,Y):
-                if len(self.domains[X]) == 0:
+
+
+    def ac3_dirty_job(self,arcs):
+        while arcs:
+            (X, Y) = arcs.pop()
+            if self.revise(X, Y):
+                if self.domains[X] is None:
                     return False
-                    for Z in self.crossword.neighbors(X) - {Y}:
-                        queue.append((Z,X))
-            return True
+                for Z in self.crossword.neighbors(X) - {Y}:
+                    arcs.append((Z, X))
+        return True
 
     def ac3(self, arcs=None):
         """
@@ -145,58 +142,46 @@ class CrosswordCreator():
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
         """
-        result = False
-
-        #Begins with all arcs in the problem
-        if arcs == None:
-            arc_queue = list()
-            for X in self.crossword.variables:
-                neighbours = self.crossword.neighbors(X)
-                if len(neighbours)>0:
-                    for var in neighbours:
-                        overlaps = self.crossword.overlaps[X, var]
-                        if overlaps != None:
-                            arc_queue.append((X,var))
-            result = self.ac3_dirtyJob(arc_queue)
-        #Use arcs as initial list of arcs
+        if arcs is None:
+            all_arcs = []
+            for var_1 in self.domains:
+                for var_2 in self.domains:
+                    if var_1 != var_2:
+                        all_arcs.append((var_1, var_2))
+            return self.ac3_dirty_job(all_arcs)
         else:
-            result = self.ac3_dirtyJob(arcs)
-        return result
-
-
+            return self.ac3_dirty_job(arcs)
 
     def assignment_complete(self, assignment):
         """
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
         """
-        return not 0 in [len(assignment.get(var,default = '')) for var in self.crossword.variables] 
-    
+        for v in self.crossword.variables:
+            if v not in assignment.keys() or assignment[v] not in self.crossword.words:
+                return False
+        return True
+
     def consistent(self, assignment):
         """
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
         """
-        #Control variables
-        c1 = c2 = c3 = 0
-        
-        for var in assignment:    
+        for var in assignment:
             #Length test
-            if var.length != len(assignment.get(var,default='')):
-                c1 = 1
-            #Distinct values test
-            if assignment.get(var) in list(assignment.values().copy()).remove(assignment.get(var)):
-                c2 = 1
-            #Neighbour test
-            if len(self.crossword.neighbors(var))>0:
-                for n in self.crossword.neighbors(var):
-                    if self.crossword.overlaps[var, n] != None:
-                        (i,j) = self.crossword.overlaps[var, n]
-                        if assignment.get(var,default=(1+i)*"_")[i] != assignment.get(n,default=(j+1)*'*')[j]:
-                            c3 = 1
-        #Final check
-        if 1 in (c1,c2,c3):
-            return False
+            if var.length != len(assignment.get(var,'')):
+                return False
+
+            for var2 in assignment:
+                if var != var2:
+                    # Distinct words test
+                    if assignment[var] == assignment[var2]:
+                        return False
+                    overlaps = self.crossword.overlaps[var,var2]
+                    #Overlap test
+                    if overlaps != None:
+                        if assignment[var][overlaps[0]] != assignment[var2][overlaps[1]]:
+                            return False
         return True
 
 
@@ -222,7 +207,7 @@ class CrosswordCreator():
         #TODO Later implement correctly
         for var in self.crossword.variables:
             if var not in assignment:
-                return var  
+                return var
 
 
     def backtrack(self, assignment):
@@ -234,33 +219,20 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-        #Check if assignment is complete
+        self.print(assignment)
         if self.assignment_complete(assignment):
             return assignment
-
-        #Select an Unassigned var X
-        X = self.select_unassigned_variable(assignment)
-        
-        #Loop over X's domain in a selected order
-        for currentValue in self.order_domain_values(X, assignment): 
-
-            #check if current value is consistent with assignment
-            
-
-            #add var: current value to assignment 
-
-            #Keep track of possible inferences
-
-            #if inferences not failure add them to the assignment
-
-            #recursivly call backtrak with the new assignment
-
-            #if the recursive call is not a failure return it
-
-            #otherwhise (if value not consistent) remove inferences and var:current value to assignment
-        
-        #return failure
+        var = self.select_unassigned_variable(assignment)
+        for value in self.order_domain_values(var, assignment):
+            assignment[var] = value
+            if self.consistent(assignment):
+                result = self.backtrack(assignment)
+                if result is None:
+                    assignment[var] = None
+                else:
+                    return result
         return None
+
 
 def main():
 
