@@ -1,4 +1,5 @@
 import sys,random
+import math
 
 from crossword import *
 
@@ -115,10 +116,16 @@ class CrosswordCreator():
         False if no revision was made.
         """
         revised = False
-        for val_x in self.domains[x]:
-            for val_y in self.domains[y]:
-              
-
+        constraint_satisfied = False
+        overlaps = self.crossword.overlaps[x,y]
+        if overlaps != None:
+            for val_x in self.domains[x].copy():
+                for val_y in self.domains[y]:
+                    if val_x[overlaps[0]] == val_y[overlaps[1]]:
+                        constraint_satisfied = True
+                if not constraint_satisfied :
+                    self.domains[x].remove(val_x)
+                    revised = True
         return revised
 
 
@@ -192,8 +199,29 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
-        #TODO Later implement correctly
-        return sorted(list(self.domains[var]))
+
+        for neighbor in self.crossword.neighbors(var):
+            i,j = self.crossword.overlaps[var,neighbor]
+
+            affect_list = list()
+
+            for value in self.domains[var]:
+                values_affected = 0
+                for neighbor_val in self.domains[neighbor]:
+                    if value[i] != neighbor_val[j]:
+                        values_affected += 1
+                affect_list.append([value,values_affected])
+
+        values_affected_sorted = sorted([item[1] for item in affect_list])
+
+        result = list()
+
+        for item in values_affected_sorted:
+            for elem in affect_list:
+                if elem[1] == item and not elem[0] in result:
+                    result.append(elem[0])
+
+        return result
 
 
     def select_unassigned_variable(self, assignment):
@@ -204,10 +232,29 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        #TODO Later implement correctly
-        for var in self.crossword.variables:
-            if var not in assignment:
-                return var
+        degree = 0
+        value = math.inf
+
+        for key in self.domains.keys():
+            if key not in assignment:
+                if value > len(self.domains[key]):
+                    value = len(self.domains[key])
+                    variable = key
+                    if self.crossword.neighbors(key) == None:
+                        degree = 0
+                    else:
+                        degree = len(self.crossword.neighbors(key))
+                elif value == len(self.domains[key]):
+                    if self.crossword.neighbors != None:
+                        if degree < len(self.crossword.neighbors(key)):
+                            variable = key
+                            value = len(self.domains[key])
+                            degree = len(self.crossword.neighbors(key))
+                    else:
+                        variable = key
+                        degree = 0
+                        value = len(self.domains[key])
+        return variable
 
 
     def backtrack(self, assignment):
@@ -219,7 +266,6 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
-        self.print(assignment)
         if self.assignment_complete(assignment):
             return assignment
         var = self.select_unassigned_variable(assignment)
